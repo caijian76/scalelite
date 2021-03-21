@@ -147,7 +147,10 @@ class BigBlueButtonApiController < ApplicationController
 
     # Create meeting in database
     logger.debug("Creating meeting #{params[:meetingID]} in database.")
-    meeting = Meeting.find_or_create_with_server(params[:meetingID], server)
+
+    moderator_pwd = params[:moderatorPW].presence || SecureRandom.alphanumeric(8)
+    params[:moderatorPW] = moderator_pwd
+    meeting = Meeting.find_or_create_with_server(params[:meetingID], server, moderator_pwd)
 
     # Update with old server if meeting already existed in database
     server = meeting.server
@@ -389,7 +392,8 @@ class BigBlueButtonApiController < ApplicationController
       xml.response do
         xml.returncode('SUCCESS')
         xml.messageKey('noMeetings')
-        xml.message('No meetings were found on this server.')
+        xml.message('no meetings were found on this server')
+        xml.meetings
       end
     end
   end
